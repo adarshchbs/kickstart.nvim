@@ -1030,6 +1030,13 @@ require('mini.icons').setup()
 require('mini.files').setup()
 require('mini.completion').setup()
 require('mini.surround').setup()
+require('mini.tabline').setup()
+
+local builtin = require 'telescope.builtin'
+vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Telescope find files' })
+vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = 'Telescope live grep' })
+vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = 'Telescope buffers' })
+vim.keymap.set('n', '<leader>fh', builtin.help_tags, { desc = 'Telescope help tags' })
 
 -- Function to toggle between light and dark themes
 function ToggleTheme()
@@ -1055,5 +1062,11 @@ vim.api.nvim_create_user_command('ToggleTheme', ToggleTheme, {})
 vim.keymap.set('n', '<leader>tt', ToggleTheme, { noremap = true, silent = true })
 
 -- Set default theme (adjust as needed)
-vim.o.background = 'dark' -- or 'light'
-vim.cmd [[colorscheme onedark]] -- or 'onelight'
+local time = os.date '*t'
+if time.hour > 6 and time.hour <= 19 then
+  vim.o.background = 'light' -- or 'light'
+  vim.cmd [[colorscheme onelight]] -- or 'onelight'
+else
+  vim.o.background = 'dark' -- or 'light'
+  vim.cmd [[colorscheme onedark]] -- or 'onelight'
+end
