@@ -155,7 +155,7 @@ vim.opt.inccommand = 'split'
 vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
-vim.opt.scrolloff = 10
+vim.opt.scrolloff = 15
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -228,6 +228,10 @@ vim.opt.rtp:prepend(lazypath)
 --
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
+  {
+    'olimorris/onedarkpro.nvim',
+    priority = 1000, -- Ensure it loads first
+  },
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
@@ -627,6 +631,31 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
+        basedpyright = {
+          settings = {
+            basedpyright = {
+              analysis = {
+                autoSearchPaths = true,
+                diagnosticMode = 'openFilesOnly',
+                autoImportCompletions = true,
+                useLibraryCodeForTypes = true,
+                typeCheckingMode = 'basic',
+                --diagnosticSeverityOverrides = {
+                --reportGeneralTypeIssues = 'none',
+                --reportOptionalMemberAccess = 'none',
+                --reportOptionalSubscript = 'none',
+                --reportPrivateImportUsage = 'none',
+                --},
+                inlayHints = {
+                  callArgumentNames = false,
+                  functionReturnTypes = true,
+                  variableTypes = true,
+                },
+              },
+              disableOrganizeImports = true,
+            },
+          },
+        },
 
         lua_ls = {
           -- cmd = {...},
@@ -689,6 +718,8 @@ require('lazy').setup({
         desc = '[F]ormat buffer',
       },
     },
+    ---@module "conform"
+    ---@type conform.setupOpts
     opts = {
       notify_on_error = false,
       format_on_save = function(bufnr)
@@ -710,7 +741,7 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
+        python = { 'ruff_organize_imports', 'ruff_format' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -785,13 +816,13 @@ require('lazy').setup({
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          --['<C-y>'] = cmp.mapping.confirm { select = true },
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
-          --['<CR>'] = cmp.mapping.confirm { select = true },
-          --['<Tab>'] = cmp.mapping.select_next_item(),
-          --['<S-Tab>'] = cmp.mapping.select_prev_item(),
+          ['<CR>'] = cmp.mapping.confirm { select = true },
+          ['<Tab>'] = cmp.mapping.select_next_item(),
+          ['<S-Tab>'] = cmp.mapping.select_prev_item(),
 
           -- Manually trigger a completion from nvim-cmp.
           --  Generally you don't need this, because nvim-cmp will display
@@ -834,6 +865,20 @@ require('lazy').setup({
     end,
   },
 
+  {
+    'ray-x/lsp_signature.nvim',
+    event = 'InsertEnter',
+    opts = {
+      bind = true,
+      handler_opts = {
+        border = 'rounded',
+      },
+    },
+    config = function(_, opts)
+      require('lsp_signature').setup(opts)
+    end,
+  },
+  { 'echasnovski/mini.nvim', version = '*' },
   { -- You can easily change to a different colorscheme.
     -- Change the name of the colorscheme plugin below, and then
     -- change the command in the config to whatever the name of that colorscheme is.
@@ -898,7 +943,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'python', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -966,5 +1011,49 @@ require('lazy').setup({
   },
 })
 
+local conform = require 'conform'
+conform.formatters.ruff_format = {
+  prepend_args = {
+    'format',
+    '--line-length',
+    '110',
+  },
+}
+vim.lsp.inlay_hint.enable(true)
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+
+-- vim.cmd 'colorscheme onedark'
+vim.keymap.set('', 's', 'l', { desc = 'Move cursor right' })
+
+require('mini.icons').setup()
+require('mini.files').setup()
+require('mini.completion').setup()
+require('mini.surround').setup()
+
+-- Function to toggle between light and dark themes
+function ToggleTheme()
+  if vim.o.background == 'dark' then
+    vim.o.background = 'light'
+    require('onedarkpro').setup {
+      colors = {
+        red = '#E65E62',
+        gray = '#8e8e9e',
+      },
+    }
+    vim.cmd [[colorscheme onelight]]
+  else
+    vim.o.background = 'dark'
+    vim.cmd [[colorscheme onedark]]
+  end
+end
+
+-- Create command to toggle theme
+vim.api.nvim_create_user_command('ToggleTheme', ToggleTheme, {})
+
+-- Optional: Set up a keybinding to toggle theme
+vim.keymap.set('n', '<leader>tt', ToggleTheme, { noremap = true, silent = true })
+
+-- Set default theme (adjust as needed)
+vim.o.background = 'dark' -- or 'light'
+vim.cmd [[colorscheme onedark]] -- or 'onelight'
