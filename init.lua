@@ -1,89 +1,3 @@
---[[
-
-=====================================================================
-==================== READ THIS BEFORE CONTINUING ====================
-=====================================================================
-========                                    .-----.          ========
-========         .----------------------.   | === |          ========
-========         |.-""""""""""""""""""-.|   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||   KICKSTART.NVIM   ||   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||                    ||   |-----|          ========
-========         ||:Tutor              ||   |:::::|          ========
-========         |'-..................-'|   |____o|          ========
-========         `"")----------------(""`   ___________      ========
-========        /::::::::::|  |::::::::::\  \ no mouse \     ========
-========       /:::========|  |==hjkl==:::\  \ required \    ========
-========      '""""""""""""'  '""""""""""""'  '""""""""""'   ========
-========                                                     ========
-=====================================================================
-=====================================================================
-
-What is Kickstart?
-
-  Kickstart.nvim is *not* a distribution.
-
-  Kickstart.nvim is a starting point for your own configuration.
-    The goal is that you can read every line of code, top-to-bottom, understand
-    what your configuration is doing, and modify it to suit your needs.
-
-    Once you've done that, you can start exploring, configuring and tinkering to
-    make Neovim your own! That might mean leaving Kickstart just the way it is for a while
-    or immediately breaking it into modular pieces. It's up to you!
-
-    If you don't know anything about Lua, I recommend taking some time to read through
-    a guide. One possible example which will only take 10-15 minutes:
-      - https://learnxinyminutes.com/docs/lua/
-
-    After understanding a bit more about Lua, you can use `:help lua-guide` as a
-    reference for how Neovim integrates Lua.
-    - :help lua-guide
-    - (or HTML version): https://neovim.io/doc/user/lua-guide.html
-
-Kickstart Guide:
-
-  TODO: The very first thing you should do is to run the command `:Tutor` in Neovim.
-
-    If you don't know what this means, type the following:
-      - <escape key>
-      - :
-      - Tutor
-      - <enter key>
-
-    (If you already know the Neovim basics, you can skip this step.)
-
-  Once you've completed that, you can continue working through **AND READING** the rest
-  of the kickstart init.lua.
-
-  Next, run AND READ `:help`.
-    This will open up a help window with some basic information
-    about reading, navigating and searching the builtin help documentation.
-
-    This should be the first place you go to look when you're stuck or confused
-    with something. It's one of my favorite Neovim features.
-
-    MOST IMPORTANTLY, we provide a keymap "<space>sh" to [s]earch the [h]elp documentation,
-    which is very useful when you're not exactly sure of what you're looking for.
-
-  I have left several `:help X` comments throughout the init.lua
-    These are hints about where to find more information about the relevant settings,
-    plugins or Neovim features used in Kickstart.
-
-   NOTE: Look for lines like this
-
-    Throughout the file. These are for you, the reader, to help you understand what is happening.
-    Feel free to delete them once you know what you're doing, but they should serve as a guide
-    for when you are first encountering a few different constructs in your Neovim config.
-
-If you experience any errors while trying to install kickstart, run `:checkhealth` for more info.
-
-I hope you enjoy your Neovim journey,
-- TJ
-
-P.S. You can delete this when you're done too. It's your config now! :)
---]]
-
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -103,6 +17,9 @@ vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
 -- vim.opt.relativenumber = true
+
+-- Disable swap files
+vim.opt.swapfile = false
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -234,6 +151,7 @@ require('lazy').setup({
   },
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  "mrjones2014/smart-splits.nvim",
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -963,6 +881,97 @@ require('lazy').setup({
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
 
+  { -- REST client for Neovim
+    'rest-nvim/rest.nvim',
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      opts = function(_, opts)
+        opts.ensure_installed = opts.ensure_installed or {}
+        table.insert(opts.ensure_installed, 'http')
+      end,
+    },
+    config = function()
+      require('rest-nvim').setup {
+        -- Table of custom dynamic variables
+        custom_dynamic_variables = {},
+        -- Request configuration
+        request = {
+          -- Skip SSL verification, useful for self-signed certificates
+          skip_ssl_verification = false,
+          -- Default request hooks
+          hooks = {
+            -- Encode URL before making request
+            encode_url = true,
+            -- Set User-Agent header when it is empty
+            user_agent = 'rest.nvim',
+            -- Set Content-Type header when it is empty and body is provided
+            set_content_type = true,
+          },
+        },
+        -- Response configuration
+        response = {
+          -- Default response hooks
+          hooks = {
+            -- Decode the request URL segments on response UI to improve readability
+            decode_url = true,
+            -- Format the response body using `gq` command
+            format = true,
+          },
+        },
+        -- Client configuration
+        clients = {
+          curl = {
+            -- Statistics to be shown
+            statistics = {
+              { id = 'time_total', winbar = 'take', title = 'Time taken' },
+              { id = 'size_download', winbar = 'size', title = 'Download size' },
+            },
+            opts = {
+              -- Add --compressed argument when Accept-Encoding header includes gzip
+              set_compressed = false,
+              -- Table containing certificates for each domain
+              certificates = {},
+            },
+          },
+        },
+        -- Cookies configuration
+        cookies = {
+          -- Whether to enable cookies support
+          enable = true,
+          -- Cookies file path
+          path = vim.fs.joinpath(vim.fn.stdpath 'data', 'rest-nvim.cookies'),
+        },
+        -- Environment variables configuration
+        env = {
+          -- Whether to enable environment variables support
+          enable = true,
+          -- Pattern to match env files
+          pattern = '.*%.env.*',
+        },
+        -- UI configuration
+        ui = {
+          -- Whether to set winbar to result panes
+          winbar = true,
+          -- Keybinds for navigating result panes
+          keybinds = {
+            -- Mapping for cycle to previous result pane
+            prev = 'H',
+            -- Mapping for cycle to next result pane
+            next = 'L',
+          },
+        },
+        -- Highlight configuration
+        highlight = {
+          -- Whether current request highlighting is enabled
+          enable = true,
+          -- Duration time of the request highlighting in milliseconds
+          timeout = 750,
+        },
+      }
+
+    end,
+  },
+
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
@@ -990,6 +999,9 @@ require('lazy').setup({
   -- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
   -- you can continue same window with `<space>sr` which resumes last telescope search
 }, {
+  rocks = {
+    hererocks = true, -- Force lazy.nvim to install the correct versions of lua and luarocks
+  },
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
     -- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table
@@ -1037,6 +1049,42 @@ vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Telescope find f
 vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = 'Telescope live grep' })
 vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = 'Telescope buffers' })
 vim.keymap.set('n', '<leader>fh', builtin.help_tags, { desc = 'Telescope help tags' })
+
+-- Tab cycling through buffers
+vim.keymap.set('n', '<Tab>', ':bnext<CR>', { desc = 'Next buffer', silent = true })
+vim.keymap.set('n', '<S-Tab>', ':bprevious<CR>', { desc = 'Previous buffer', silent = true })
+
+-- Autosave configuration
+-- Create an autocommand group for autosave
+local autosave_group = vim.api.nvim_create_augroup('autosave', { clear = true })
+
+-- Autosave when changing buffers
+vim.api.nvim_create_autocmd({ 'BufLeave', 'FocusLost' }, {
+  group = autosave_group,
+  callback = function()
+    if vim.bo.modified and not vim.bo.readonly and vim.fn.expand('%') ~= '' then
+      vim.cmd('silent! write')
+    end
+  end,
+  desc = 'Autosave when changing buffer or losing focus',
+})
+
+-- Autosave after 60 seconds of inactivity
+vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
+  group = autosave_group,
+  callback = function()
+    if vim.bo.modified and not vim.bo.readonly and vim.fn.expand('%') ~= '' then
+      vim.cmd('silent! write')
+    end
+  end,
+  desc = 'Autosave after 60 seconds of inactivity',
+})
+
+-- Set updatetime to 60000 milliseconds (60 seconds) for CursorHold events
+vim.opt.updatetime = 60000
+-- REST Keybindings
+vim.keymap.set('n', '<leader>rr', ':Rest run <cr>', { buffer = buffer, desc = 'Run REST request' })
+vim.keymap.set('n', '<leader>rl', ':Rest logs <cr>', { buffer = buffer, desc = 'Show REST logs' })
 
 -- Function to toggle between light and dark themes
 function ToggleTheme()
