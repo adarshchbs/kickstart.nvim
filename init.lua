@@ -149,9 +149,15 @@ require('lazy').setup({
     'olimorris/onedarkpro.nvim',
     priority = 1000, -- Ensure it loads first
   },
+  {
+    'Kicamon/markdown-table-mode.nvim',
+    config = function()
+      require('markdown-table-mode').setup()
+    end,
+  },
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
-  "mrjones2014/smart-splits.nvim",
+  'mrjones2014/smart-splits.nvim',
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -968,7 +974,6 @@ require('lazy').setup({
           timeout = 750,
         },
       }
-
     end,
   },
 
@@ -1062,8 +1067,8 @@ local autosave_group = vim.api.nvim_create_augroup('autosave', { clear = true })
 vim.api.nvim_create_autocmd({ 'BufLeave', 'FocusLost' }, {
   group = autosave_group,
   callback = function()
-    if vim.bo.modified and not vim.bo.readonly and vim.fn.expand('%') ~= '' then
-      vim.cmd('silent! write')
+    if vim.bo.modified and not vim.bo.readonly and vim.fn.expand '%' ~= '' then
+      vim.cmd 'silent! write'
     end
   end,
   desc = 'Autosave when changing buffer or losing focus',
@@ -1073,8 +1078,8 @@ vim.api.nvim_create_autocmd({ 'BufLeave', 'FocusLost' }, {
 vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
   group = autosave_group,
   callback = function()
-    if vim.bo.modified and not vim.bo.readonly and vim.fn.expand('%') ~= '' then
-      vim.cmd('silent! write')
+    if vim.bo.modified and not vim.bo.readonly and vim.fn.expand '%' ~= '' then
+      vim.cmd 'silent! write'
     end
   end,
   desc = 'Autosave after 60 seconds of inactivity',
