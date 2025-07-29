@@ -41,4 +41,7 @@ vim.api.nvim_create_autocmd({'CursorHold', 'CursorHoldI'}, {
     desc = 'Autosave after 60 seconds of inactivity'
 })
 
+-- Load and setup markdown configuration
+require('custom.markdown').setup()
+
 return {}

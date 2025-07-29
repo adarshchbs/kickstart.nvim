@@ -15,7 +15,12 @@ return { -- Fuzzy Finder (files, lsp, etc)
         cond = function()
             return vim.fn.executable('make') == 1
         end
-    }, 'nvim-telescope/telescope-ui-select.nvim', 'nvim-tree/nvim-web-devicons'},
+    }, 'nvim-telescope/telescope-ui-select.nvim', 'nvim-tree/nvim-web-devicons', {
+        'nvim-telescope/telescope-live-grep-args.nvim',
+        -- This will not install any breaking changes.
+        -- For major updates, this must be adjusted manually.
+        version = "^1.0.0"
+    }},
     config = function()
         -- [[ Configure Telescope ]]
         -- See `:help telescope` and `:help telescope.setup()`
@@ -65,6 +70,7 @@ return { -- Fuzzy Finder (files, lsp, etc)
         -- Enable telescope extensions, if they are installed
         pcall(require('telescope').load_extension, 'fzf')
         pcall(require('telescope').load_extension, 'ui-select')
+        pcall(require('telescope').load_extension, 'live_grep_args')
 
         -- See `:help telescope.builtin`
         local builtin = require('telescope.builtin')
@@ -83,8 +89,11 @@ return { -- Fuzzy Finder (files, lsp, etc)
         vim.keymap.set('n', '<leader>sw', builtin.grep_string, {
             desc = '[S]earch current [W]ord'
         })
-        vim.keymap.set('n', '<leader>sg', builtin.live_grep, {
-            desc = '[S]earch by [G]rep'
+        -- vim.keymap.set('n', '<leader>sg', builtin.live_grep, {
+        --     desc = '[S]earch by [G]rep'
+        -- })
+        vim.keymap.set('n', '<leader>sg', require("telescope").extensions.live_grep_args.live_grep_args, {
+            desc = '[S]earch by [G]rep with Args'
         })
         vim.keymap.set('n', '<leader>sd', builtin.diagnostics, {
             desc = '[S]earch [D]iagnostics'

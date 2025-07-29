@@ -62,7 +62,16 @@ return {{
 
         -- LSP configuration
         lsp = {
-            keymaps = true -- enables default Kulala's LSP keymaps
+            keymaps = true, -- enables default Kulala's LSP keymaps
+            -- enable/disable/customize HTTP formatter
+            formatter = {
+                sort = { -- enable/disable alphabetical sorting in request body
+                    metadata = true,
+                    variables = true,
+                    commands = false,
+                    json = false
+                }
+            }
         }
     },
     config = function(_, opts)
