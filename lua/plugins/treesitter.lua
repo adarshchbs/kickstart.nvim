@@ -19,12 +19,6 @@ return {{
         indent = {
             enable = true,
             disable = {'ruby'}
-        },
-        autotag = {
-            enable = true
-        },
-        pairs = {
-            enable = true -- Enable the nvim-treesitter-pairs module
         }
     }
     -- There are additional nvim-treesitter modules that you can use to interact

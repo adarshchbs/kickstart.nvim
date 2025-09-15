@@ -89,6 +89,9 @@ return { -- Detect tabstop and shiftwidth automatically
             '<leader>h',
             group = 'Git [H]unk',
             mode = {'n', 'v'}
+        }, {
+            '<leader>e',
+            group = 'File [e]xplorer'
         }}
     }
 }, -- Mini plugins collection
@@ -130,7 +133,29 @@ return { -- Detect tabstop and shiftwidth automatically
 
         -- Additional mini modules
         require('mini.icons').setup()
-        require('mini.files').setup()
+        require('mini.files').setup({
+            -- Optional: Configure mini.files options here
+            permanent_delete = false, -- Send to trash instead of permanent delete
+            -- options = { use_as_default_explorer = true }, -- Use mini.files as default file explorer
+            content = {
+                sort = function(entries)
+                    -- Custom sort: files first, then directories
+                    table.sort(entries, function(a, b)
+                        local a_is_dir = a.fs_type == 'directory'
+                        local b_is_dir = b.fs_type == 'directory'
+                        
+                        -- If one is directory and other is file, file comes first
+                        if a_is_dir ~= b_is_dir then
+                            return b_is_dir -- file (false) comes before directory (true)
+                        end
+                        
+                        -- If both are same type, sort alphabetically
+                        return a.name < b.name
+                    end)
+                    return entries
+                end,
+            },
+        })
         require('mini.completion').setup()
         require('mini.tabline').setup()
     end

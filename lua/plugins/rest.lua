@@ -72,6 +72,12 @@ return {{
                     json = false
                 }
             }
+        },
+
+        -- UI configuration
+        ui = {
+            -- Set max response size to 10MB (default is 32KB)
+            max_response_size = 10485760, -- 10MB in bytes
         }
     },
     config = function(_, opts)

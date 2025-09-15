@@ -74,4 +74,15 @@ vim.keymap.set('n', '<leader>rl', ':Rest logs <cr>', {
     desc = 'Show REST logs'
 })
 
+-- Mini.files toggle keybinding
+vim.keymap.set('n', '<leader>e', function()
+    local mini_files = require('mini.files')
+    if not mini_files.close() then
+        mini_files.open()
+    end
+end, {
+    desc = 'Toggle file [e]xplorer'
+})
+
+
 return {}
